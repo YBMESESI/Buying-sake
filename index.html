@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>사케 다이어리</title>
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);}());</script>
   <style>
     :root {
       --bg: #0D1018;
@@ -27,6 +28,30 @@
       --r: 12px;
       --r2: 8px;
     }
+
+    [data-theme="light"] {
+      --bg: #F5F3EE;
+      --s1: #FFFFFF;
+      --s2: #EDEBE5;
+      --s3: #E2DFD8;
+      --bd: #CCC8C0;
+      --bd2: #B0A898;
+      --ab: #9A7A28;
+      --ab-l: #B08830;
+      --ab-d: #7A5820;
+      --bl: #3A6898;
+      --bl-l: #4A80B8;
+      --gr: #2E6A50;
+      --pu: #5A5088;
+      --tx: #1A2232;
+      --dm: #485070;
+      --mt: #8090A8;
+    }
+    [data-theme="light"] .ov { background: rgba(160, 155, 145, .80); }
+    [data-theme="light"] .modal { box-shadow: 0 8px 40px rgba(0,0,0,.18); }
+
+    .theme-btn { background: var(--s2); border: 1px solid var(--bd); border-radius: var(--r2); padding: 9px 10px; cursor: pointer; color: var(--dm); display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; }
+    .theme-btn:hover { background: var(--s3); color: var(--tx); border-color: var(--bd2); }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
@@ -263,12 +288,15 @@
       <div class="tb-t">나의 사케 여정</div>
       <div class="tb-d" id="tbDate"></div>
     </div>
-    <button class="add-btn" onclick="openAdd()">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      사케 추가
-    </button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()"></button>
+      <button class="add-btn" onclick="openAdd()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        사케 추가
+      </button>
+    </div>
   </div>
   <div class="ftabs">
     <div class="ft on" onclick="setF('all', this)">전체</div>
@@ -596,6 +624,32 @@
 </div>
 
 <script>
+  function getCssVar(v) {
+    return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  }
+
+  function toggleTheme() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const next = isLight ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeBtn();
+    renderAll();
+  }
+
+  function updateThemeBtn() {
+    const btn = document.getElementById('themeBtn');
+    if (!btn) return;
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    if (isLight) {
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+      btn.title = '다크 모드로 전환';
+    } else {
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+      btn.title = '라이트 모드로 전환';
+    }
+  }
+
   const TYPES = {
     '준마이다이긴조': { c: '#BF9840', bg: 'rgba(191,152,64,.15)' },
     '준마이긴조':     { c: '#5A88B2', bg: 'rgba(90,136,178,.15)' },
@@ -652,11 +706,12 @@
   function radar(profile, color, sz = 66) {
     const n = 5, cx = sz / 2, cy = sz / 2, mr = sz / 2 - 7;
     const angles = Array.from({ length: n }, (_, i) => i * 2 * Math.PI / n - Math.PI / 2);
+    const bd = getCssVar('--bd'), s2 = getCssVar('--s2');
     const rings = [1, 2, 3, 4, 5].map(r => {
       const pts = angles.map(a => `${cx + Math.cos(a) * mr * (r / 5)},${cy + Math.sin(a) * mr * (r / 5)}`).join(' ');
-      return `<polygon points="${pts}" fill="none" stroke="${r === 5 ? '#2A3850' : '#1A2232'}" stroke-width="${r === 5 ? .8 : .5}"/>`;
+      return `<polygon points="${pts}" fill="none" stroke="${r === 5 ? bd : s2}" stroke-width="${r === 5 ? .8 : .5}"/>`;
     }).join('');
-    const axes = angles.map(a => `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(a) * mr}" y2="${cy + Math.sin(a) * mr}" stroke="#2A3850" stroke-width=".7"/>`).join('');
+    const axes = angles.map(a => `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(a) * mr}" y2="${cy + Math.sin(a) * mr}" stroke="${bd}" stroke-width=".7"/>`).join('');
     const pts = profile.map((v, i) => { const r = (v / 5) * mr; return `${cx + Math.cos(angles[i]) * r},${cy + Math.sin(angles[i]) * r}`; }).join(' ');
     const dots = profile.map((v, i) => { const r = (v / 5) * mr; return `<circle cx="${cx + Math.cos(angles[i]) * r}" cy="${cy + Math.sin(angles[i]) * r}" r="2" fill="${color}"/>`; }).join('');
     return `<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}">${rings}${axes}<polygon points="${pts}" fill="${color}28" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>${dots}</svg>`;
@@ -666,17 +721,18 @@
     const n = 5, cx = sz / 2, cy = sz / 2, mr = sz / 2 - 18;
     const angles = Array.from({ length: n }, (_, i) => i * 2 * Math.PI / n - Math.PI / 2);
     const lblR = mr + 14;
+    const bd = getCssVar('--bd'), s2 = getCssVar('--s2'), dm = getCssVar('--dm');
     const rings = [1, 2, 3, 4, 5].map(r => {
       const pts = angles.map(a => `${cx + Math.cos(a) * mr * (r / 5)},${cy + Math.sin(a) * mr * (r / 5)}`).join(' ');
-      return `<polygon points="${pts}" fill="none" stroke="${r === 5 ? '#2A3850' : '#1A2232'}" stroke-width="${r === 5 ? 1 : .6}"/>`;
+      return `<polygon points="${pts}" fill="none" stroke="${r === 5 ? bd : s2}" stroke-width="${r === 5 ? 1 : .6}"/>`;
     }).join('');
-    const axes = angles.map(a => `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(a) * mr}" y2="${cy + Math.sin(a) * mr}" stroke="#2A3850" stroke-width=".8"/>`).join('');
+    const axes = angles.map(a => `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(a) * mr}" y2="${cy + Math.sin(a) * mr}" stroke="${bd}" stroke-width=".8"/>`).join('');
     const pts = profile.map((v, i) => { const r = (v / 5) * mr; return `${cx + Math.cos(angles[i]) * r},${cy + Math.sin(angles[i]) * r}`; }).join(' ');
     const dots = profile.map((v, i) => { const r = (v / 5) * mr; return `<circle cx="${cx + Math.cos(angles[i]) * r}" cy="${cy + Math.sin(angles[i]) * r}" r="2.5" fill="${color}"/>`; }).join('');
     const lbls = DIMS.map((d, i) => {
       const ax = cx + Math.cos(angles[i]) * lblR, ay = cy + Math.sin(angles[i]) * lblR;
       const ta = Math.abs(ax - cx) < 4 ? 'middle' : ax < cx ? 'end' : 'start';
-      return `<text x="${ax}" y="${ay}" font-size="8" fill="#7A90B4" text-anchor="${ta}" dominant-baseline="middle" font-family="sans-serif">${d}</text>`;
+      return `<text x="${ax}" y="${ay}" font-size="8" fill="${dm}" text-anchor="${ta}" dominant-baseline="middle" font-family="sans-serif">${d}</text>`;
     }).join('');
     return `<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}">${rings}${axes}<polygon points="${pts}" fill="${color}28" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>${dots}${lbls}</svg>`;
   }
@@ -1185,6 +1241,7 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') ['addOv', 'detOv'].forEach(closeOv); });
 
   renderAll();
+  updateThemeBtn();
   // 앱 로드 후 위시리스트 자동 재고 확인 (24시간 미확인 항목)
   setTimeout(autoCheckWishlist, 1200);
 </script>
