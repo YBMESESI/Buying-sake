@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>사케 다이어리</title>
+  <style>
+    :root {
+      --bg: #0D1018;
+      --s1: #131824;
+      --s2: #1A2232;
+      --s3: #222C40;
+      --bd: #2A3850;
+      --bd2: #384E6C;
+      --ab: #BF9840;
+      --ab-l: #D0A850;
+      --ab-d: #7A6228;
+      --bl: #5A88B2;
+      --bl-l: #70A0CC;
+      --gr: #4E8A70;
+      --pu: #7A70A8;
+      --tx: #D0DCEE;
+      --dm: #7A90B4;
+      --mt: #465472;
+      --serif: 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+      --sans: 'Apple SD Gothic Neo', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+      --r: 12px;
+      --r2: 8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--tx); display: flex; }
+
+    /* ── SIDEBAR ── */
+    .sb { width: 224px; flex-shrink: 0; background: var(--s1); border-right: 1px solid var(--bd); display: flex; flex-direction: column; height: 100vh; }
+    .sb-head { padding: 22px 20px 18px; border-bottom: 1px solid var(--bd); }
+    .sb-en { font-size: 9px; color: var(--ab); letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 5px; }
+    .sb-ko { font-family: var(--serif); font-size: 21px; color: var(--tx); line-height: 1.1; }
+    .sb-sub { font-size: 10px; color: var(--mt); margin-top: 4px; letter-spacing: .5px; }
+    .sb-stats { padding: 15px 20px; border-bottom: 1px solid var(--bd); }
+    .sb-sh { font-size: 9px; color: var(--mt); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 9px; }
+    .sr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+    .sn { font-size: 11px; color: var(--dm); }
+    .sv { font-size: 13px; color: var(--tx); font-variant-numeric: tabular-nums; }
+    .sv-acc { color: var(--ab-l); }
+    .sb-nav { flex: 1; overflow-y: auto; padding: 14px 0; }
+    .sb-nav::-webkit-scrollbar { width: 3px; }
+    .sb-nav::-webkit-scrollbar-thumb { background: var(--bd); }
+    .nh { font-size: 9px; color: var(--mt); letter-spacing: 1.5px; text-transform: uppercase; padding: 0 20px; margin-bottom: 6px; }
+    .nr { display: flex; align-items: center; gap: 8px; padding: 8px 20px; cursor: pointer; transition: background .12s; }
+    .nr:hover, .nr.on { background: var(--s2); }
+    .ndot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .nlbl { font-size: 12px; color: var(--dm); flex: 1; }
+    .nr.on .nlbl, .nr:hover .nlbl { color: var(--tx); }
+    .ncnt { font-size: 10px; color: var(--mt); font-variant-numeric: tabular-nums; }
+    .sb-bot { padding: 14px 20px; border-top: 1px solid var(--bd); }
+    .sb-bot-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--mt); margin-bottom: 6px; }
+    .pb { height: 3px; background: var(--bd); border-radius: 2px; overflow: hidden; }
+    .pf { height: 100%; background: var(--ab); border-radius: 2px; transition: width .4s; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .tb { padding: 24px 28px 0; display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; }
+    .tb-t { font-family: var(--serif); font-size: 25px; color: var(--tx); text-wrap: balance; line-height: 1.2; }
+    .tb-d { font-size: 11px; color: var(--mt); margin-top: 4px; }
+    .add-btn { display: flex; align-items: center; gap: 7px; background: var(--ab); color: #0D1018; border: none; padding: 10px 16px; border-radius: var(--r2); font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--sans); transition: background .15s, transform .1s; flex-shrink: 0; }
+    .add-btn:hover { background: var(--ab-l); transform: translateY(-1px); }
+    .add-btn:active { transform: translateY(0); }
+    .ftabs { display: flex; gap: 3px; padding: 15px 28px 0; flex-shrink: 0; }
+    .ft { padding: 5px 13px; border-radius: 20px; font-size: 11px; color: var(--mt); cursor: pointer; border: 1px solid transparent; transition: all .12s; }
+    .ft:hover { color: var(--dm); border-color: var(--bd); }
+    .ft.on { background: var(--s2); color: var(--tx); border-color: var(--bd); }
+
+    /* ── GRID ── */
+    .grid { flex: 1; overflow-y: auto; padding: 16px 28px 28px; display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; align-content: start; }
+    .grid::-webkit-scrollbar { width: 5px; }
+    .grid::-webkit-scrollbar-thumb { background: var(--bd); border-radius: 3px; }
+
+    /* ── CARD ── */
+    .card { background: var(--s1); border: 1px solid var(--bd); border-radius: var(--r); padding: 16px; cursor: pointer; transition: border-color .18s, transform .14s, box-shadow .18s; position: relative; overflow: hidden; }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--c, var(--ab)); }
+    .card:hover { border-color: var(--bd2); transform: translateY(-2px); box-shadow: 0 10px 36px rgba(0, 0, 0, .45); }
+    .card:focus-visible { outline: 2px solid var(--ab); outline-offset: 2px; }
+    .cmeta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
+    .tchip { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; letter-spacing: .3px; }
+    .schip { font-size: 9px; padding: 2px 8px; border-radius: 4px; letter-spacing: .5px; text-transform: uppercase; }
+    .s-tried { background: rgba(90, 136, 178, .12); color: var(--bl-l); }
+    .s-wish { background: rgba(191, 152, 64, .12); color: var(--ab-l); }
+    .cbody { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 11px; }
+    .cinfo { flex: 1; min-width: 0; }
+    .cname { font-family: var(--serif); font-size: 17px; color: var(--tx); line-height: 1.2; text-wrap: balance; }
+    .cname-ja { font-size: 10px; color: var(--mt); margin-top: 2px; letter-spacing: .5px; }
+    .cbrewery { font-size: 11px; color: var(--dm); margin-top: 5px; }
+    .cdata { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; flex-wrap: wrap; }
+    .stars { display: flex; gap: 2px; }
+    .st { font-size: 12px; }
+    .st.on { color: var(--ab); }
+    .st.off { color: var(--bd2); }
+    .dpill { font-size: 10px; color: var(--dm); background: var(--s2); padding: 2px 7px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+    .cnote { font-size: 11px; color: var(--dm); line-height: 1.55; margin-bottom: 9px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .cfoot { display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: var(--mt); padding-top: 9px; border-top: 1px solid var(--bd); }
+
+    /* ── EMPTY ── */
+    .empty { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; gap: 10px; color: var(--mt); }
+    .empty-ico { font-size: 36px; opacity: .3; }
+
+    /* ── MODAL ── */
+    .ov { position: fixed; inset: 0; background: rgba(6, 8, 14, .9); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(6px); opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .ov.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--s1); border: 1px solid var(--bd2); border-radius: var(--r); width: 100%; max-width: 440px; padding: 24px; transform: translateY(10px); transition: transform .2s; max-height: 90vh; overflow-y: auto; }
+    .ov.open .modal { transform: translateY(0); }
+    .modal::-webkit-scrollbar { width: 4px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--bd); border-radius: 2px; }
+    .mt { font-family: var(--serif); font-size: 18px; color: var(--tx); margin-bottom: 16px; }
+    .fg { margin-bottom: 12px; }
+    .fl { display: block; font-size: 9px; color: var(--mt); letter-spacing: 1.3px; text-transform: uppercase; margin-bottom: 5px; }
+    .fi, .fsel, .fta { width: 100%; background: var(--s2); border: 1px solid var(--bd); border-radius: var(--r2); padding: 9px 11px; font-size: 13px; color: var(--tx); font-family: var(--sans); outline: none; transition: border-color .14s; -webkit-appearance: none; }
+    .fi:focus, .fsel:focus, .fta:focus { border-color: var(--ab); }
+    .fsel option { background: var(--s2); }
+    .fta { resize: vertical; min-height: 64px; }
+    .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .star-in { display: flex; gap: 5px; cursor: pointer; }
+    .star-in span { font-size: 24px; color: var(--bd2); transition: color .1s; user-select: none; }
+    .star-in span.on { color: var(--ab); }
+    .sldg { margin-bottom: 7px; }
+    .slrow { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+    .sllbl { font-size: 11px; color: var(--dm); width: 46px; flex-shrink: 0; }
+    .sld { flex: 1; -webkit-appearance: none; height: 3px; background: var(--bd); border-radius: 2px; outline: none; cursor: pointer; }
+    .sld::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--ab); cursor: pointer; }
+    .slv { font-size: 11px; color: var(--ab); width: 14px; text-align: right; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    .macts { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+    .btn-c { padding: 8px 15px; background: transparent; border: 1px solid var(--bd); border-radius: var(--r2); color: var(--mt); font-size: 12px; cursor: pointer; font-family: var(--sans); transition: all .12s; }
+    .btn-c:hover { border-color: var(--bd2); color: var(--dm); }
+    .btn-p { padding: 8px 15px; background: var(--ab); border: none; border-radius: var(--r2); color: #0D1018; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--sans); transition: background .14s; }
+    .btn-p:hover { background: var(--ab-l); }
+    .toggle-row { display: flex; gap: 8px; }
+    .tog { flex: 1; padding: 8px; border-radius: var(--r2); border: 1px solid var(--bd); background: var(--s2); color: var(--dm); font-size: 12px; cursor: pointer; font-family: var(--sans); text-align: center; transition: all .12s; }
+    .tog.on { border-color: var(--ab); background: rgba(191, 152, 64, .12); color: var(--ab-l); font-weight: 600; }
+
+    /* ── IMAGE ZONE + AUTOFILL ── */
+    .img-zone { border: 2px dashed var(--bd2); border-radius: var(--r2); padding: 18px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; position: relative; margin-bottom: 12px; user-select: none; }
+    .img-zone:hover, .img-zone.drag { border-color: var(--ab); background: rgba(191,152,64,.06); }
+    .img-zone.has-img { border-style: solid; border-color: var(--ab-d); padding: 10px; cursor: default; }
+    .iz-ico { font-size: 30px; display: block; margin-bottom: 6px; pointer-events: none; }
+    .iz-hint { font-size: 11px; color: var(--mt); pointer-events: none; }
+    .iz-preview { max-width: 100%; max-height: 110px; border-radius: 6px; display: block; margin: 0 auto 4px; }
+    .iz-name { font-size: 10px; color: var(--dm); }
+    .iz-clear { position: absolute; top: 5px; right: 6px; background: rgba(0,0,0,.6); border: none; color: #fff; font-size: 14px; cursor: pointer; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; line-height: 1; }
+    .af-btn { width: 100%; padding: 9px; background: var(--s2); border: 1px solid var(--ab-d); border-radius: var(--r2); color: var(--ab-l); font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 14px; }
+    .af-btn:hover:not(:disabled) { background: rgba(191,152,64,.1); border-color: var(--ab); }
+    .af-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .af-spin { width: 12px; height: 12px; border: 2px solid var(--ab-d); border-top-color: var(--ab); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes flashFill { 0%,100% { background: var(--s2); } 50% { background: rgba(191,152,64,.22); } }
+    .fi.ff, .fsel.ff, .fta.ff { animation: flashFill .45s ease; }
+
+    /* ── SEARCH RESULTS ── */
+    .sr-panel { border: 1px solid var(--bd); border-radius: var(--r2); overflow: hidden; margin-bottom: 14px; }
+    .sr-hdr { font-size: 9px; color: var(--mt); letter-spacing: 1.2px; text-transform: uppercase; padding: 7px 12px; background: var(--s3); border-bottom: 1px solid var(--bd); }
+    .sr-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--bd); transition: background .12s; }
+    .sr-item:last-child { border-bottom: none; }
+    .sr-item:hover { background: var(--s3); }
+    .sri-name { font-size: 13px; color: var(--tx); font-family: var(--serif); line-height: 1.2; }
+    .sri-ja { font-size: 10px; color: var(--mt); margin-top: 2px; }
+    .sri-row { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+    .sri-chip { font-size: 9px; padding: 2px 6px; border-radius: 3px; background: var(--s2); color: var(--dm); border: 1px solid var(--bd); }
+
+    /* ── STOCK PANEL ── */
+    .stock-panel { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--bd); }
+    .stock-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .stock-lbl { font-size: 9px; color: var(--mt); letter-spacing: 1.3px; text-transform: uppercase; }
+    .check-btn { padding: 4px 10px; background: var(--s3); border: 1px solid var(--bd2); border-radius: 6px; font-size: 10px; color: var(--dm); cursor: pointer; font-family: var(--sans); transition: all .12s; white-space: nowrap; }
+    .check-btn:hover:not(:disabled) { background: var(--ab); color: #0D1018; border-color: transparent; font-weight: 700; }
+    .check-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .shop-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; font-size: 11px; }
+    .shop-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .shop-name-txt { color: var(--dm); flex: 1; }
+    .shop-cnt { color: var(--mt); font-variant-numeric: tabular-nums; font-size: 10px; }
+    .shop-link { font-size: 10px; color: var(--ab); text-decoration: none; white-space: nowrap; }
+    .shop-link:hover { color: var(--ab-l); }
+    .stock-time { font-size: 9px; color: var(--mt); margin-top: 6px; }
+    .avail-badge { display: inline-flex; align-items: center; gap: 3px; background: rgba(78,138,112,.18); color: #6AB890; border-radius: 4px; padding: 2px 7px; font-size: 9px; font-weight: 600; letter-spacing: .5px; }
+
+    /* ── TOAST ── */
+    #toast-wrap { position: fixed; bottom: 22px; right: 22px; z-index: 300; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .toast { background: var(--s2); border: 1px solid var(--bd2); border-radius: var(--r2); padding: 10px 14px; font-size: 12px; color: var(--tx); min-width: 210px; max-width: 290px; box-shadow: 0 4px 24px rgba(0,0,0,.5); animation: tIn .2s ease; pointer-events: auto; }
+    .toast.ok { border-left: 3px solid #6AB890; }
+    .toast.info { border-left: 3px solid var(--bl-l); }
+    .toast.err { border-left: 3px solid #C07070; }
+    @keyframes tIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* ── DETAIL ── */
+    .dh { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+    .dname { font-family: var(--serif); font-size: 22px; color: var(--tx); line-height: 1.2; }
+    .dname-ja { font-size: 12px; color: var(--mt); margin-top: 3px; }
+    .dbrewery { font-size: 12px; color: var(--dm); margin-top: 6px; }
+    .dchips { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
+    .dgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .dcell { background: var(--s2); border-radius: var(--r2); padding: 10px 12px; }
+    .dcl { font-size: 9px; color: var(--mt); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 4px; }
+    .dcv { font-size: 16px; color: var(--tx); font-variant-numeric: tabular-nums; }
+    .dnotes { background: var(--s2); border-radius: var(--r2); padding: 12px 14px; font-size: 12px; color: var(--dm); line-height: 1.65; margin-bottom: 14px; font-style: italic; }
+    .del-btn { background: none; border: none; color: var(--mt); cursor: pointer; font-size: 11px; font-family: var(--sans); text-decoration: underline; padding: 0; transition: color .12s; margin-right: auto; }
+    .del-btn:hover { color: #B05555; }
+
+    /* ── GUIDE VIEW ── */
+    .guide-view { flex: 1; overflow-y: auto; padding: 20px 28px 36px; display: none; }
+    .guide-view::-webkit-scrollbar { width: 5px; }
+    .guide-view::-webkit-scrollbar-thumb { background: var(--bd); border-radius: 3px; }
+    .gv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+    .gv-col { background: var(--s1); border: 1px solid var(--bd); border-radius: var(--r); overflow: hidden; }
+    .gv-head { padding: 16px 18px 14px; border-bottom: 1px solid var(--bd); position: relative; }
+    .gv-head::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--ab); }
+    .gv-brand-ja { font-family: var(--serif); font-size: 19px; color: var(--tx); line-height: 1.2; margin-bottom: 3px; }
+    .gv-brand-ko { font-size: 11px; color: var(--ab-l); margin-bottom: 8px; }
+    .gv-brewery { font-size: 10px; color: var(--dm); }
+    .gv-region { font-size: 10px; color: var(--mt); margin-top: 2px; }
+    .gv-desc { font-size: 10px; color: var(--mt); line-height: 1.55; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--bd); }
+    .gv-shops { padding: 4px 0; }
+    .gv-row { display: flex; align-items: center; gap: 10px; padding: 9px 18px; border-bottom: 1px solid var(--bd); transition: background .12s; }
+    .gv-row:last-child { border-bottom: none; }
+    .gv-row:hover { background: var(--s2); }
+    .gv-shop-info { flex: 1; min-width: 0; }
+    .gv-shop-name { font-size: 12px; color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .gv-shop-type { font-size: 9px; color: var(--mt); margin-top: 2px; }
+    .gv-buy { display: inline-block; padding: 4px 10px; border: 1px solid var(--bd2); border-radius: 5px; font-size: 10px; color: var(--dm); text-decoration: none; white-space: nowrap; flex-shrink: 0; transition: background .12s, color .12s, border-color .12s; font-family: var(--sans); }
+    .gv-buy:hover { background: var(--ab); border-color: transparent; color: #0D1018; font-weight: 700; }
+    .gv-buy:focus-visible { outline: 2px solid var(--ab); outline-offset: 2px; }
+    .gv-foot { font-size: 10px; color: var(--mt); margin-top: 16px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+
+<aside class="sb">
+  <div class="sb-head">
+    <div class="sb-en">Sake Diary</div>
+    <div class="sb-ko">🍶 사케 다이어리</div>
+    <div class="sb-sub">나만의 사케 여정</div>
+  </div>
+  <div class="sb-stats" id="sbStats"></div>
+  <nav class="sb-nav">
+    <div class="nh">종류별</div>
+    <div id="navList"></div>
+  </nav>
+  <div style="padding: 0 0 6px; border-top: 1px solid var(--bd); margin-top: 6px;">
+    <div class="nh" style="padding-top:14px">구매처</div>
+    <div class="nr" id="navGuide" onclick="openGuide()">
+      <div class="ndot" style="background:var(--ab)"></div>
+      <div class="nlbl">구매처 가이드</div>
+      <div class="ncnt">4</div>
+    </div>
+  </div>
+  <div class="sb-bot">
+    <div class="sb-bot-row"><span>올해 경험한 사케</span><span id="botPct" style="color:var(--dm)">0병</span></div>
+    <div class="pb"><div class="pf" id="botFill" style="width:0%"></div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="tb">
+    <div>
+      <div class="tb-t">나의 사케 여정</div>
+      <div class="tb-d" id="tbDate"></div>
+    </div>
+    <button class="add-btn" onclick="openAdd()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      사케 추가
+    </button>
+  </div>
+  <div class="ftabs">
+    <div class="ft on" onclick="setF('all', this)">전체</div>
+    <div class="ft" onclick="setF('tried', this)">마셔봄</div>
+    <div class="ft" onclick="setF('wish', this)">마시고 싶음</div>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <!-- ── GUIDE VIEW ── -->
+  <div class="guide-view" id="guideView">
+    <div class="gv-grid">
+
+      <!-- 신슈키레이 -->
+      <div class="gv-col">
+        <div class="gv-head">
+          <div class="gv-brand-ja">信州亀齢</div>
+          <div class="gv-brand-ko">신슈키레이</div>
+          <div class="gv-brewery">岡崎酒造 · 長野県上田市</div>
+          <div class="gv-region">준마이다이긴조 · 미야마니시키 쌀</div>
+          <div class="gv-desc">현지 정미를 고집하는 소규모 양조장. 특약점 한정 판매로 입수 어려움.</div>
+        </div>
+        <div class="gv-shops">
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">栄屋長谷商店</div>
+              <div class="gv-shop-type">地酒専門 · 온라인 주문 가능</div>
+            </div>
+            <a class="gv-buy" href="https://www.sakaeyahase.com/sinsyukirei.html" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">さいとう酒店</div>
+              <div class="gv-shop-type">地酒・日本ワイン専門</div>
+            </div>
+            <a class="gv-buy" href="https://www.saitousaketen.co.jp/%E6%97%A5%E6%9C%AC%E9%85%92-%E4%BF%A1%E5%B7%9E%E4%BA%80%E9%BD%A2-%E5%B2%A1%E5%B4%8E%E9%85%92%E9%80%A0-%E5%95%86%E5%93%81%E4%B8%80%E8%A6%A7/" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">H Sake オンラインストア</div>
+              <div class="gv-shop-type">中部地酒 전문 통판</div>
+            </div>
+            <a class="gv-buy" href="https://www.hsake.jp/%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%82%A2-1/%E4%B8%AD%E9%83%A8/%E4%BF%A1%E5%B7%9E%E4%BA%80%E9%BD%A2%E3%81%B2%E3%81%A8%E3%81%94%E3%81%93%E3%81%A1%E7%94%9F-720ml/" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">田島屋酒店</div>
+              <div class="gv-shop-type">長野 지자케 특약점</div>
+            </div>
+            <a class="gv-buy" href="https://www.tajima-ya.com/shinshuukirei.html" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">坐kura</div>
+              <div class="gv-shop-type">일본 전통주 큐레이션 통판</div>
+            </div>
+            <a class="gv-buy" href="https://thekura.jp/shinsyukirei-kinmonnishiki-2024by/" target="_blank" rel="noopener">구매</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 유키노보우샤 -->
+      <div class="gv-col">
+        <div class="gv-head">
+          <div class="gv-brand-ja">雪の茅舎</div>
+          <div class="gv-brand-ko">유키노보우샤</div>
+          <div class="gv-brewery">齋彌酒造店 · 秋田県由利本荘市</div>
+          <div class="gv-region">야마하이 준마이 · 카이 불사용</div>
+          <div class="gv-desc">카이 젓기 없음, 여과 없음, 가수 없음. 미생물 주도 양조의 대표주자.</div>
+        </div>
+        <div class="gv-shops">
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">矢島酒店</div>
+              <div class="gv-shop-type">地酒・自然派ワイン 専門</div>
+            </div>
+            <a class="gv-buy" href="https://www.yajima-jizake.co.jp/products/list.php?category_id=448" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">淀川酒店</div>
+              <div class="gv-shop-type">秋田 지자케 전문 · 당일 발송</div>
+            </div>
+            <a class="gv-buy" href="https://www.sakeyodo.com/view/item/000000000736" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">佐金酒店</div>
+              <div class="gv-shop-type">秋田の地酒屋 · 전 품목 취급</div>
+            </div>
+            <a class="gv-buy" href="https://www.sakin21.com/SHOP/0111_33_1800.html" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">若松屋酒店</div>
+              <div class="gv-shop-type">온라인 전문 지자케점</div>
+            </div>
+            <a class="gv-buy" href="https://eshop.wakamatsuyasaketen.com/view/item/000000000332" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">秋田日本酒市場</div>
+              <div class="gv-shop-type">秋田 전 양조장 공식 통판</div>
+            </div>
+            <a class="gv-buy" href="https://www.akitanosake.net/shopbrand/ct60/" target="_blank" rel="noopener">구매</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 덴슈 -->
+      <div class="gv-col">
+        <div class="gv-head">
+          <div class="gv-brand-ja">田酒</div>
+          <div class="gv-brand-ko">덴슈</div>
+          <div class="gv-brewery">西田酒造店 · 青森県青森市</div>
+          <div class="gv-region">준마이계 전품목 · 양조 알코올 무첨가</div>
+          <div class="gv-desc">논 이외 원료를 일절 사용하지 않는 철학. 입수 난이도 최상위급.</div>
+        </div>
+        <div class="gv-shops">
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">酒のやまもと</div>
+              <div class="gv-shop-type">蔵元特約店 · 정가 판매</div>
+            </div>
+            <a class="gv-buy" href="https://www.sakenoyamamoto.jp/view/category/cat_sak03087" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">池田酒店</div>
+              <div class="gv-shop-type">地酒 특약점 · 희소 銘柄 취급</div>
+            </div>
+            <a class="gv-buy" href="https://ikedasaketen.com/shop/1457072663.html" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">酒の志筑屋</div>
+              <div class="gv-shop-type">정가 통판 전문</div>
+            </div>
+            <a class="gv-buy" href="https://www.shidukuya.co.jp/SHOP/75220/75222/list.html" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">さいとう酒店</div>
+              <div class="gv-shop-type">地酒・日本ワイン専門</div>
+            </div>
+            <a class="gv-buy" href="https://www.saitousaketen.co.jp/%E6%97%A5%E6%9C%AC%E9%85%92-%E7%94%B0%E9%85%92-%E8%A5%BF%E7%94%B0%E9%85%92%E9%80%A0%E5%BA%97-%E5%95%86%E5%93%81%E4%B8%80%E8%A6%A7/" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">地酒庵さとう</div>
+              <div class="gv-shop-type">東北・青森 지자케 전문</div>
+            </div>
+            <a class="gv-buy" href="https://www.zizakean.jp/SHOP/4582356331008.html" target="_blank" rel="noopener">구매</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 킨스즈메 -->
+      <div class="gv-col">
+        <div class="gv-head">
+          <div class="gv-brand-ja">金雀</div>
+          <div class="gv-brand-ko">킨스즈메</div>
+          <div class="gv-brewery">堀江酒場 · 山口県岩国市</div>
+          <div class="gv-region">준마이다이긴조 · IWC 2017·2018 1위</div>
+          <div class="gv-desc">1764년 창업. 유통을 엄격히 관리하며 蔵元 직판 및 극소수 특약점 한정 판매.</div>
+        </div>
+        <div class="gv-shops">
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">堀江酒場 公式ショップ</div>
+              <div class="gv-shop-type">蔵元直販 · 全商品 취급</div>
+            </div>
+            <a class="gv-buy" href="https://www.horiesakaba.com/products/list" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">大和屋酒舗</div>
+              <div class="gv-shop-type">広島 지자케 전문 · 1869년 창업</div>
+            </div>
+            <a class="gv-buy" href="https://www.yamatoya-e.com/SHOP/76110/202956/list.html" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">大阪屋酒店</div>
+              <div class="gv-shop-type">吉祥寺 지자케 전문점 온라인</div>
+            </div>
+            <a class="gv-buy" href="https://osakayasaketen.com/%E6%97%A5%E6%9C%AC%E9%85%92/%E4%B8%AD%E5%9B%BD%E5%9C%B0%E6%96%B9%E3%81%AE%E5%9C%B0%E9%85%92/%E5%A0%80%E6%B1%9F%E9%85%92%E9%80%A0/" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">CRAVITON</div>
+              <div class="gv-shop-type">지자케 큐레이션 통판</div>
+            </div>
+            <a class="gv-buy" href="https://craviton.com/breweries/view/121" target="_blank" rel="noopener">구매</a>
+          </div>
+          <div class="gv-row">
+            <div class="gv-shop-info">
+              <div class="gv-shop-name">SAKETIME 通販</div>
+              <div class="gv-shop-type">리뷰 + 연동 구매처 목록</div>
+            </div>
+            <a class="gv-buy" href="https://www.saketime.jp/brands/1828/" target="_blank" rel="noopener">구매</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="gv-foot">재고 상황은 각 판매점에서 수시로 변동됩니다. 구매 전 반드시 재고를 확인하세요.<br>신슈키레이는 특약점 한정 판매, 덴슈·킨스즈메는 입고 즉시 소진되는 경우가 많습니다.</div>
+  </div>
+</main>
+
+<!-- ADD MODAL -->
+<div class="ov" id="addOv" onclick="bgC(event, 'addOv')">
+  <div class="modal">
+    <div class="mt">새 사케 추가</div>
+    <div class="img-zone" id="imgZone"
+      onclick="imgZoneClick()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleDrop(event)">
+      <span class="iz-ico">📷</span>
+      <div class="iz-hint">라벨 사진을 드래그하거나 클릭해서 업로드 (선택)</div>
+      <input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleFile(this.files[0])"/>
+    </div>
+    <button class="af-btn" id="afBtn" onclick="autoFill()" disabled>
+      <span>✦ AI 사케 검색</span>
+    </button>
+    <div id="srPanel" style="display:none"></div>
+    <div class="fg">
+      <label class="fl">사케 이름 (한글/영문)</label>
+      <input class="fi" id="aN" placeholder="예: 닷사이 23, Dassai 23" oninput="updateAfBtn()" />
+    </div>
+    <div class="fg">
+      <label class="fl">일본어 이름 (선택)</label>
+      <input class="fi" id="aJ" placeholder="例: 獺祭 二割三分" />
+    </div>
+    <div class="frow">
+      <div class="fg">
+        <label class="fl">종류</label>
+        <select class="fsel" id="aT">
+          <option>준마이다이긴조</option>
+          <option>준마이긴조</option>
+          <option>준마이</option>
+          <option>다이긴조</option>
+          <option>긴조</option>
+          <option>혼조조</option>
+          <option>니고리</option>
+          <option>나마자케</option>
+          <option>스파클링</option>
+          <option>기타</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">양조장</label>
+        <input class="fi" id="aBr" placeholder="예: 아사히 주조" />
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg">
+        <label class="fl">산지 (현)</label>
+        <input class="fi" id="aR" placeholder="예: 야마구치현" />
+      </div>
+      <div class="fg">
+        <label class="fl">정미율 (%)</label>
+        <input type="number" class="fi" id="aPol" placeholder="23" min="1" max="99" />
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg">
+        <label class="fl">도수 (%)</label>
+        <input type="number" class="fi" id="aAbv" placeholder="15.5" step="0.5" min="1" max="30" />
+      </div>
+      <div class="fg">
+        <label class="fl">음용 온도</label>
+        <select class="fsel" id="aTemp">
+          <option>냉주 (차갑게)</option>
+          <option>상온</option>
+          <option>온주 (데워서)</option>
+          <option>무관</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">상태</label>
+      <div class="toggle-row">
+        <button class="tog on" id="togTried" onclick="setStatus('tried')">✓ 마셔봤어요</button>
+        <button class="tog" id="togWish" onclick="setStatus('wish')">♡ 마시고 싶어요</button>
+      </div>
+    </div>
+    <div id="ratingSection">
+      <div class="fg">
+        <label class="fl">평점</label>
+        <div class="star-in" id="starIn"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">플레이버 프로파일</label>
+        <div class="sldg" id="sliders"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">테이스팅 노트</label>
+        <textarea class="fta" id="aNotes" placeholder="향, 맛, 여운 등 자유롭게 기록해보세요…"></textarea>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label class="fl">마신 장소</label>
+          <input class="fi" id="aPlace" placeholder="예: 이태원 이자카야" />
+        </div>
+        <div class="fg">
+          <label class="fl">날짜</label>
+          <input type="date" class="fi" id="aDate" />
+        </div>
+      </div>
+    </div>
+    <div class="macts">
+      <button class="btn-c" onclick="closeOv('addOv')">취소</button>
+      <button class="btn-p" onclick="addSake()">추가하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-wrap"></div>
+
+<!-- DETAIL MODAL -->
+<div class="ov" id="detOv" onclick="bgC(event, 'detOv')">
+  <div class="modal" id="detBody"></div>
+</div>
+
+<script>
+  const TYPES = {
+    '준마이다이긴조': { c: '#BF9840', bg: 'rgba(191,152,64,.15)' },
+    '준마이긴조':     { c: '#5A88B2', bg: 'rgba(90,136,178,.15)' },
+    '준마이':         { c: '#4E8A70', bg: 'rgba(78,138,112,.15)' },
+    '다이긴조':       { c: '#BF9840', bg: 'rgba(191,152,64,.12)' },
+    '긴조':           { c: '#5A88B2', bg: 'rgba(90,136,178,.12)' },
+    '혼조조':         { c: '#7A70A8', bg: 'rgba(122,112,168,.15)' },
+    '니고리':         { c: '#8898A8', bg: 'rgba(136,152,168,.15)' },
+    '나마자케':       { c: '#6A9870', bg: 'rgba(106,152,112,.15)' },
+    '스파클링':       { c: '#5898B8', bg: 'rgba(88,152,184,.15)' },
+    '기타':           { c: '#7A7A7A', bg: 'rgba(122,122,122,.15)' },
+  };
+
+  const DIMS = ['감도', '산도', '고미', '농도', '향기'];
+
+  const DEFAULT = [
+    { id: 1, name: '닷사이 23', nameJa: '獺祭 二割三分', type: '준마이다이긴조', brewery: '아사히 주조', region: '야마구치현', polishing: 23, abv: 16, temp: '냉주 (차갑게)', status: 'tried', rating: 5, profile: [3, 2, 1, 3, 5], notes: '섬세하고 화려한 과실향. 복숭아와 사과를 연상시키는 은은하면서도 풍부한 향. 목 넘김이 매끄럽고 여운이 길다. 일본 사케의 정점.', place: '강남 사케바', date: '2026-05-15' },
+    { id: 2, name: '구보타 만주', nameJa: '久保田 萬寿', type: '준마이다이긴조', brewery: '아사히 주조', region: '니가타현', polishing: 33, abv: 15, temp: '냉주 (차갑게)', status: 'tried', rating: 5, profile: [2, 3, 2, 5, 4], notes: '니가타 특유의 깔끔하고 드라이한 맛. 깊은 감칠맛과 부드러운 마무리. 어떤 요리와도 잘 어울리는 완성도.', place: '이태원 이자카야', date: '2026-04-08' },
+    { id: 3, name: '쥬욘다이', nameJa: '十四代', type: '준마이긴조', brewery: '다카기 주조', region: '야마가타현', polishing: 50, abv: 15, temp: '냉주 (차갑게)', status: 'tried', rating: 5, profile: [5, 3, 1, 3, 5], notes: '일본에서 가장 구하기 어려운 사케 중 하나. 달콤하고 과일 향이 넘쳐 마치 주스처럼 마시기 쉽다. 복숭아·딸기·멜론의 향연.', place: '신사동 오마카세', date: '2026-03-20' },
+    { id: 4, name: '핫카이산 혼조조', nameJa: '八海山 本醸造', type: '혼조조', brewery: '핫카이산 주조', region: '니가타현', polishing: 60, abv: 15.5, temp: '냉주 (차갑게)', status: 'tried', rating: 4, profile: [2, 3, 3, 3, 3], notes: '드라이하고 가볍다. 어떤 안주와도 잘 어울리는 만능 사케. 차갑게 마시면 특히 상쾌하고 깔끔하다.', place: '집', date: '2026-05-02' },
+    { id: 5, name: '요시다 쿠라 니고리', nameJa: '吉田蔵 にごり', type: '니고리', brewery: '요시다 주조', region: '이시카와현', polishing: 65, abv: 16, temp: '냉주 (차갑게)', status: 'tried', rating: 4, profile: [5, 2, 1, 5, 2], notes: '걸쭉하고 달콤한 니고리. 요거트 같은 질감과 쌀의 감칠맛이 가득. 디저트처럼 즐기기 좋다.', place: '홍대 사케 전문점', date: '2026-06-10' },
+    { id: 6, name: '신 준마이다이긴조', nameJa: '申 純米大吟醸', type: '준마이다이긴조', brewery: '미즈노 주조', region: '아이치현', polishing: 40, abv: 16, temp: '냉주 (차갑게)', status: 'wish', rating: 0, profile: [3, 3, 2, 4, 4], notes: '', place: '', date: '' },
+  ];
+
+  function ld() {
+    try {
+      const r = localStorage.getItem('sake_v1');
+      if (r) {
+        // 기존 데이터에 stockStatus 필드 보장
+        return JSON.parse(r).map(s => ({
+          stockStatus: 'unchecked', stockResults: null, stockCheckedAt: null, ...s,
+        }));
+      }
+    } catch (e) {}
+    return DEFAULT.map(s => ({ stockStatus: 'unchecked', stockResults: null, stockCheckedAt: null, ...s }));
+  }
+  function sv() { localStorage.setItem('sake_v1', JSON.stringify(sakes)); }
+
+  let sakes = ld();
+  let filter = 'all';
+  let activeCat = 'all';
+  let addStatus = 'tried';
+  let addRating = 0;
+  let addR = [3, 3, 3, 3, 3];
+  let nextId = Math.max(0, ...sakes.map(s => s.id)) + 1;
+  let pendingImage = null; // { mediaType, data, previewUrl, name }
+  let searchResults = [];
+
+  function today() { const d = new Date(); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
+  function p(n) { return String(n).padStart(2, '0'); }
+  function fmtD(s) { if (!s) return ''; const [y, m, d] = s.split('-'); return `${y}년 ${+m}월 ${+d}일`; }
+  function thisYear() { return new Date().getFullYear(); }
+
+  function radar(profile, color, sz = 66) {
+    const n = 5, cx = sz / 2, cy = sz / 2, mr = sz / 2 - 7;
+    const angles = Array.from({ length: n }, (_, i) => i * 2 * Math.PI / n - Math.PI / 2);
+    const rings = [1, 2, 3, 4, 5].map(r => {
+      const pts = angles.map(a => `${cx + Math.cos(a) * mr * (r / 5)},${cy + Math.sin(a) * mr * (r / 5)}`).join(' ');
+      return `<polygon points="${pts}" fill="none" stroke="${r === 5 ? '#2A3850' : '#1A2232'}" stroke-width="${r === 5 ? .8 : .5}"/>`;
+    }).join('');
+    const axes = angles.map(a => `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(a) * mr}" y2="${cy + Math.sin(a) * mr}" stroke="#2A3850" stroke-width=".7"/>`).join('');
+    const pts = profile.map((v, i) => { const r = (v / 5) * mr; return `${cx + Math.cos(angles[i]) * r},${cy + Math.sin(angles[i]) * r}`; }).join(' ');
+    const dots = profile.map((v, i) => { const r = (v / 5) * mr; return `<circle cx="${cx + Math.cos(angles[i]) * r}" cy="${cy + Math.sin(angles[i]) * r}" r="2" fill="${color}"/>`; }).join('');
+    return `<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}">${rings}${axes}<polygon points="${pts}" fill="${color}28" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>${dots}</svg>`;
+  }
+
+  function radarLarge(profile, color, sz = 110) {
+    const n = 5, cx = sz / 2, cy = sz / 2, mr = sz / 2 - 18;
+    const angles = Array.from({ length: n }, (_, i) => i * 2 * Math.PI / n - Math.PI / 2);
+    const lblR = mr + 14;
+    const rings = [1, 2, 3, 4, 5].map(r => {
+      const pts = angles.map(a => `${cx + Math.cos(a) * mr * (r / 5)},${cy + Math.sin(a) * mr * (r / 5)}`).join(' ');
+      return `<polygon points="${pts}" fill="none" stroke="${r === 5 ? '#2A3850' : '#1A2232'}" stroke-width="${r === 5 ? 1 : .6}"/>`;
+    }).join('');
+    const axes = angles.map(a => `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(a) * mr}" y2="${cy + Math.sin(a) * mr}" stroke="#2A3850" stroke-width=".8"/>`).join('');
+    const pts = profile.map((v, i) => { const r = (v / 5) * mr; return `${cx + Math.cos(angles[i]) * r},${cy + Math.sin(angles[i]) * r}`; }).join(' ');
+    const dots = profile.map((v, i) => { const r = (v / 5) * mr; return `<circle cx="${cx + Math.cos(angles[i]) * r}" cy="${cy + Math.sin(angles[i]) * r}" r="2.5" fill="${color}"/>`; }).join('');
+    const lbls = DIMS.map((d, i) => {
+      const ax = cx + Math.cos(angles[i]) * lblR, ay = cy + Math.sin(angles[i]) * lblR;
+      const ta = Math.abs(ax - cx) < 4 ? 'middle' : ax < cx ? 'end' : 'start';
+      return `<text x="${ax}" y="${ay}" font-size="8" fill="#7A90B4" text-anchor="${ta}" dominant-baseline="middle" font-family="sans-serif">${d}</text>`;
+    }).join('');
+    return `<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}">${rings}${axes}<polygon points="${pts}" fill="${color}28" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>${dots}${lbls}</svg>`;
+  }
+
+  function stars(n, sz = 12) {
+    return Array.from({ length: 5 }, (_, i) => `<span class="st ${i < n ? 'on' : 'off'}" style="font-size:${sz}px">${i < n ? '★' : '☆'}</span>`).join('');
+  }
+
+  // ── TOAST ──────────────────────────────────────────────
+  function showToast(msg, type = 'info', ms = 4500) {
+    const wrap = document.getElementById('toast-wrap');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(() => {
+      el.style.transition = 'opacity .3s';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 320);
+    }, ms);
+  }
+
+  // ── STOCK PANEL HTML ────────────────────────────────────
+  function buildStockPanel(s) {
+    const isChecking = s.stockStatus === 'checking';
+
+    let rows;
+    if (s.stockResults) {
+      rows = s.stockResults.map(r => {
+        const dot = r.available === true ? '#6AB890' : r.available === false ? '#C07070' : 'var(--mt)';
+        const status = r.available === true
+          ? `<span style="color:#6AB890;font-size:10px">${r.price || '구매 가능'}</span>`
+          : r.available === false
+          ? `<span style="color:#C07070;font-size:10px">품절</span>`
+          : `<span style="font-size:10px;color:var(--mt)">확인 필요</span>`;
+        const note = r.note ? `<div style="font-size:9px;color:var(--mt);margin-top:2px">${r.note}</div>` : '';
+        return `<div class="shop-row" style="flex-wrap:wrap">
+          <div class="shop-dot" style="background:${dot}"></div>
+          <span class="shop-name-txt">${r.name}</span>
+          ${status}
+          <a class="shop-link" href="${r.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">바로 구매 →</a>
+          ${note ? `<div style="width:100%;padding-left:14px">${note}</div>` : ''}
+        </div>`;
+      }).join('');
+    } else if (isChecking) {
+      rows = `<div style="font-size:11px;color:var(--bl-l);padding:4px 0">AI가 판매점을 검색 중이에요…</div>`;
+    } else {
+      rows = `<div style="font-size:11px;color:var(--mt);padding:4px 0">버튼을 눌러 구매 가능한 판매점을 검색해보세요.</div>`;
+    }
+
+    const timeStr = s.stockCheckedAt
+      ? `마지막 확인 ${new Date(s.stockCheckedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+      : '';
+
+    return `<div class="stock-panel">
+      <div class="stock-header">
+        <span class="stock-lbl">구매 가능 판매점</span>
+        <button class="check-btn" ${isChecking ? 'disabled' : ''} onclick="event.stopPropagation();checkStock(${s.id})">
+          ${isChecking ? '검색 중…' : s.stockResults ? '다시 검색' : '판매점 찾기'}
+        </button>
+      </div>
+      ${rows}
+      ${timeStr ? `<div class="stock-time">${timeStr}</div>` : ''}
+    </div>`;
+  }
+
+  // ── CHECK STOCK ─────────────────────────────────────────
+  async function checkStock(sakeId) {
+    const sake = sakes.find(s => s.id === sakeId);
+    if (!sake || sake.stockStatus === 'checking') return;
+
+    sake.stockStatus = 'checking';
+    sake.stockResults = null;
+    sv(); renderAll();
+
+    const nameToSearch = sake.nameJa || sake.name;
+
+    try {
+      const resp = await fetch(`/api/check-stock?name=${encodeURIComponent(nameToSearch)}`, {
+        signal: AbortSignal.timeout(40000),
+      });
+      const data = await resp.json();
+      if (!data.results?.length) throw new Error(data.error || '판매점을 찾지 못했어요.');
+
+      const anyAvailable = data.results.some(r => r.available === true);
+      sake.stockStatus = anyAvailable ? 'available' : 'checked';
+      sake.stockResults = data.results;
+      sake.stockCheckedAt = data.checkedAt;
+
+      if (anyAvailable) {
+        const shop = data.results.find(r => r.available === true);
+        showToast(`"${sake.name}" — ${shop.name}에서 구매 가능!`, 'ok', 7000);
+      } else {
+        showToast(`"${sake.name}" — 판매점 ${data.results.length}곳 찾았어요. 확인해보세요.`, 'info', 5000);
+      }
+    } catch (e) {
+      sake.stockStatus = 'unchecked';
+      showToast(`판매점 검색 실패: ${e.message}`, 'err', 5000);
+    }
+
+    sv(); renderAll();
+  }
+
+  // ── AUTO-CHECK (앱 로드 시 24시간 미확인 항목 자동 점검) ──
+  async function autoCheckWishlist() {
+    const wishItems = sakes.filter(s => s.status === 'wish');
+    const toCheck = wishItems.filter(s => {
+      if (!s.stockCheckedAt) return true;
+      const hrs = (Date.now() - new Date(s.stockCheckedAt).getTime()) / 3600000;
+      return hrs >= 24;
+    });
+    if (!toCheck.length) return;
+
+    showToast(`위시리스트 ${toCheck.length}개 재고 자동 확인 중…`, 'info', 3000);
+    for (const sake of toCheck) {
+      await checkStock(sake.id);
+      await new Promise(r => setTimeout(r, 600));
+    }
+  }
+
+  function renderAll() {
+    const d = new Date();
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    document.getElementById('tbDate').textContent = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]}요일)`;
+
+    const tried = sakes.filter(s => s.status === 'tried');
+    const wish = sakes.filter(s => s.status === 'wish');
+    const availCount = wish.filter(s => s.stockStatus === 'available').length;
+    const avg = tried.length ? Math.round(tried.reduce((a, s) => a + s.rating, 0) / tried.length * 10) / 10 : 0;
+    const typeCnt = {};
+    tried.forEach(s => { typeCnt[s.type] = (typeCnt[s.type] || 0) + 1; });
+    const favType = Object.entries(typeCnt).sort((a, b) => b[1] - a[1])[0];
+    const availBadge = availCount > 0
+      ? `<span class="avail-badge">🟢 ${availCount}개 구매가능</span>`
+      : '';
+    document.getElementById('sbStats').innerHTML = `
+      <div class="sb-sh">나의 기록</div>
+      <div class="sr"><span class="sn">경험한 사케</span><span class="sv sv-acc">${tried.length}병</span></div>
+      <div class="sr"><span class="sn">위시리스트</span><span class="sv">${wish.length}병 ${availBadge}</span></div>
+      <div class="sr"><span class="sn">평균 평점</span><span class="sv">${avg ? avg + '점' : '—'}</span></div>
+      <div class="sr"><span class="sn">즐겨 마시는 종류</span><span class="sv" style="font-size:11px">${favType ? favType[0] : '—'}</span></div>`;
+
+    const cmap = {};
+    sakes.forEach(s => { cmap[s.type] = (cmap[s.type] || 0) + 1; });
+    let nh = `<div class="nr ${activeCat === 'all' ? 'on' : ''}" onclick="setCat('all')"><div class="ndot" style="background:#465472"></div><div class="nlbl">전체</div><div class="ncnt">${sakes.length}</div></div>`;
+    Object.entries(cmap).sort((a, b) => b[1] - a[1]).forEach(([t, n]) => {
+      const tc = TYPES[t] || { c: '#7A7A7A' };
+      nh += `<div class="nr ${activeCat === t ? 'on' : ''}" onclick="setCat('${t}')"><div class="ndot" style="background:${tc.c}"></div><div class="nlbl">${t}</div><div class="ncnt">${n}</div></div>`;
+    });
+    document.getElementById('navList').innerHTML = nh;
+
+    const yCount = tried.filter(s => s.date && s.date.startsWith(String(thisYear()))).length;
+    document.getElementById('botPct').textContent = yCount + '병';
+    document.getElementById('botFill').style.width = Math.min(100, yCount / 20 * 100) + '%';
+
+    renderGrid();
+  }
+
+  function getList() {
+    let l = sakes;
+    if (activeCat !== 'all') l = l.filter(s => s.type === activeCat);
+    if (filter === 'tried') l = l.filter(s => s.status === 'tried');
+    else if (filter === 'wish') l = l.filter(s => s.status === 'wish');
+    return l;
+  }
+
+  function renderGrid() {
+    const list = getList();
+    const grid = document.getElementById('grid');
+    if (!list.length) {
+      grid.innerHTML = `<div class="empty"><div class="empty-ico">🍶</div><div style="font-size:13px;color:var(--mt)">아직 등록된 사케가 없어요.</div></div>`;
+      return;
+    }
+    const tc = t => TYPES[t] || { c: '#7A7A7A', bg: 'rgba(122,122,122,.15)' };
+    grid.innerHTML = list.map(s => {
+      const t = tc(s.type);
+      return `<div class="card" style="--c:${t.c}" tabindex="0" onclick="openDet(${s.id})" onkeydown="if(event.key==='Enter')openDet(${s.id})">
+        <div class="cmeta">
+          <span class="tchip" style="background:${t.bg};color:${t.c}">${s.type}</span>
+          <span class="schip ${s.status === 'tried' ? 's-tried' : 's-wish'}">${s.status === 'tried' ? '마셔봄' : '위시리스트'}</span>
+        </div>
+        <div class="cbody">
+          <div class="cinfo">
+            <div class="cname">${s.name}</div>
+            ${s.nameJa ? `<div class="cname-ja">${s.nameJa}</div>` : ''}
+            <div class="cbrewery">${[s.brewery, s.region].filter(Boolean).join(' · ')}</div>
+          </div>
+          <div style="flex-shrink:0">${radar(s.profile, t.c)}</div>
+        </div>
+        <div class="cdata">
+          <div class="stars">${stars(s.rating)}</div>
+          ${s.polishing ? `<span class="dpill">정미율 ${s.polishing}%</span>` : ''}
+          ${s.abv ? `<span class="dpill">${s.abv}%</span>` : ''}
+        </div>
+        ${s.notes ? `<div class="cnote">${s.notes}</div>` : ''}
+        ${s.status === 'wish' ? buildStockPanel(s) : `<div class="cfoot">
+          <span>${s.place || '—'}</span>
+          <span>${s.date ? fmtD(s.date) : '날짜 미기록'}</span>
+        </div>`}
+      </div>`;
+    }).join('');
+  }
+
+  function openGuide() {
+    document.querySelectorAll('.nr').forEach(n => n.classList.remove('on'));
+    document.getElementById('navGuide').classList.add('on');
+    document.querySelector('.ftabs').style.display = 'none';
+    document.getElementById('grid').style.display = 'none';
+    document.getElementById('guideView').style.display = 'block';
+    document.querySelector('.tb-t').textContent = '구매처 가이드';
+    document.getElementById('tbDate').textContent = '신슈키레이 · 유키노보우샤 · 덴슈 · 킨스즈메 전문 판매점';
+    document.querySelector('.add-btn').style.display = 'none';
+  }
+
+  function closeGuide() {
+    const gv = document.getElementById('guideView');
+    if (!gv || gv.style.display === 'none' || gv.style.display === '') return;
+    gv.style.display = 'none';
+    document.querySelector('.ftabs').style.display = '';
+    document.getElementById('grid').style.display = '';
+    document.querySelector('.add-btn').style.display = '';
+    document.getElementById('navGuide').classList.remove('on');
+    document.querySelector('.tb-t').textContent = '나의 사케 여정';
+  }
+
+  function setF(f, el) { closeGuide(); filter = f; document.querySelectorAll('.ft').forEach(t => t.classList.remove('on')); el.classList.add('on'); renderGrid(); }
+  function setCat(c) { closeGuide(); activeCat = c; renderAll(); }
+
+  // ── IMAGE ZONE ──────────────────────────────────────────
+  function imgZoneResetHTML() {
+    return `<span class="iz-ico">📷</span>
+      <div class="iz-hint">라벨 사진을 드래그하거나 클릭해서 업로드 (선택)</div>
+      <input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleFile(this.files[0])"/>`;
+  }
+
+  function imgZoneClick() {
+    if (!pendingImage) document.getElementById('imgFile').click();
+  }
+
+  function resizeImage(file, maxDim = 1024) {
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.85);
+      };
+      img.src = url;
+    });
+  }
+
+  async function handleFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const previewUrl = URL.createObjectURL(file);
+    const zone = document.getElementById('imgZone');
+    zone.classList.add('has-img');
+    zone.innerHTML = `<img class="iz-preview" src="${previewUrl}" alt="라벨"/>
+      <div class="iz-name">${file.name}</div>
+      <button class="iz-clear" onclick="event.stopPropagation();clearImage()" title="제거">×</button>`;
+
+    const dataUrl = await resizeImage(file);
+    const [meta, data] = dataUrl.split(',');
+    const mediaType = meta.match(/:(.*?);/)[1];
+    pendingImage = { mediaType, data, previewUrl, name: file.name };
+    updateAfBtn();
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    const zone = document.getElementById('imgZone');
+    zone.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleFile(file);
+  }
+
+  function clearImage() {
+    if (pendingImage) { URL.revokeObjectURL(pendingImage.previewUrl); pendingImage = null; }
+    const zone = document.getElementById('imgZone');
+    zone.classList.remove('has-img', 'drag');
+    zone.innerHTML = imgZoneResetHTML();
+    updateAfBtn();
+  }
+
+  function updateAfBtn() {
+    const hasName = document.getElementById('aN').value.trim().length > 0;
+    document.getElementById('afBtn').disabled = !hasName && !pendingImage;
+  }
+
+  async function autoFill() {
+    const name = document.getElementById('aN').value.trim();
+    if (!name && !pendingImage) return;
+
+    const btn = document.getElementById('afBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="af-spin"></div><span>검색 중…</span>';
+    document.getElementById('srPanel').style.display = 'none';
+
+    try {
+      let resp;
+      if (pendingImage) {
+        const body = { image: { mediaType: pendingImage.mediaType, data: pendingImage.data } };
+        if (name) body.name = name;
+        resp = await fetch('/api/sake-search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(35000),
+        });
+      } else {
+        resp = await fetch(`/api/sake-search?name=${encodeURIComponent(name)}`, {
+          signal: AbortSignal.timeout(35000),
+        });
+      }
+
+      const result = await resp.json();
+      if (!result.ok) throw new Error(result.error || '검색 실패');
+      searchResults = result.results || [];
+      showResults(searchResults);
+    } catch (e) {
+      showToast(e.message || '검색 실패. vercel dev로 실행 중인지 확인해보세요.', 'err', 6000);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span>✦ AI 사케 검색</span>';
+      updateAfBtn();
+    }
+  }
+
+  function showResults(results) {
+    const panel = document.getElementById('srPanel');
+    if (!results.length) {
+      panel.style.display = 'none';
+      showToast('검색 결과가 없어요. 다른 이름으로 시도해보세요.', 'info');
+      return;
+    }
+    const TYPES_MAP = {
+      '준마이다이긴조': { c: '#BF9840' }, '준마이긴조': { c: '#5A88B2' }, '준마이': { c: '#4E8A70' },
+      '다이긴조': { c: '#BF9840' }, '긴조': { c: '#5A88B2' }, '혼조조': { c: '#7A70A8' },
+      '니고리': { c: '#8898A8' }, '나마자케': { c: '#6A9870' }, '스파클링': { c: '#5898B8' }, '기타': { c: '#7A7A7A' },
+    };
+    const items = results.map((r, i) => {
+      const tc = TYPES_MAP[r.type] || { c: '#7A7A7A' };
+      const chips = [];
+      if (r.polishing) chips.push(`정미율 ${r.polishing}%`);
+      if (r.abv) chips.push(`${r.abv}%`);
+      if (r.region) chips.push(r.region);
+      return `<div class="sr-item" onclick="selectSake(${i})">
+        <div class="sri-name">${r.name}${r.type ? ` <span style="font-size:10px;color:${tc.c};font-family:var(--sans)">${r.type}</span>` : ''}</div>
+        ${r.nameJa ? `<div class="sri-ja">${r.nameJa}${r.brewery ? ' · ' + r.brewery : ''}</div>` : (r.brewery ? `<div class="sri-ja">${r.brewery}</div>` : '')}
+        ${chips.length ? `<div class="sri-row">${chips.map(c => `<span class="sri-chip">${c}</span>`).join('')}</div>` : ''}
+      </div>`;
+    }).join('');
+    panel.innerHTML = `<div class="sr-panel">
+      <div class="sr-hdr">검색 결과 ${results.length}건 — 항목을 선택하면 자동 입력됩니다</div>
+      ${items}
+    </div>`;
+    panel.style.display = '';
+  }
+
+  function selectSake(idx) {
+    const d = searchResults[idx]; if (!d) return;
+    if (d.name) fillField('aN', d.name);
+    if (d.nameJa) fillField('aJ', d.nameJa);
+    if (d.type) fillField('aT', d.type, true);
+    if (d.brewery) fillField('aBr', d.brewery);
+    if (d.region) fillField('aR', d.region);
+    if (d.polishing) fillField('aPol', d.polishing);
+    if (d.abv) fillField('aAbv', d.abv);
+    if (d.temp) fillField('aTemp', d.temp, true);
+    if (d.notes) fillField('aNotes', d.notes);
+    document.getElementById('srPanel').style.display = 'none';
+    showToast(`"${d.name}" 정보가 입력됐어요!`, 'ok');
+  }
+
+  function fillField(id, val, isSelect = false) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (isSelect) {
+      const opt = Array.from(el.options).find(o => o.value === val || o.text === val);
+      if (opt) el.value = opt.value;
+    } else {
+      el.value = val;
+    }
+    el.classList.remove('ff');
+    void el.offsetWidth;
+    el.classList.add('ff');
+    setTimeout(() => el.classList.remove('ff'), 500);
+  }
+
+  function openAdd() {
+    addStatus = 'tried'; addRating = 0; addR = [3, 3, 3, 3, 3];
+    if (pendingImage) { URL.revokeObjectURL(pendingImage.previewUrl); pendingImage = null; }
+    searchResults = [];
+    ['aN', 'aJ', 'aBr', 'aR', 'aPol', 'aAbv', 'aNotes', 'aPlace'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('aDate').value = today();
+    document.getElementById('togTried').className = 'tog on';
+    document.getElementById('togWish').className = 'tog';
+    document.getElementById('ratingSection').style.display = '';
+    const zone = document.getElementById('imgZone');
+    zone.classList.remove('has-img', 'drag');
+    zone.innerHTML = imgZoneResetHTML();
+    document.getElementById('afBtn').disabled = true;
+    document.getElementById('srPanel').style.display = 'none';
+    renderStarIn(); renderSliders();
+    document.getElementById('addOv').classList.add('open');
+    setTimeout(() => document.getElementById('aN').focus(), 200);
+  }
+
+  function setStatus(s) {
+    addStatus = s;
+    document.getElementById('togTried').className = 'tog' + (s === 'tried' ? ' on' : '');
+    document.getElementById('togWish').className = 'tog' + (s === 'wish' ? ' on' : '');
+    document.getElementById('ratingSection').style.display = s === 'wish' ? 'none' : '';
+  }
+
+  function renderStarIn() {
+    document.getElementById('starIn').innerHTML = Array.from({ length: 5 }, (_, i) =>
+      `<span class="${i < addRating ? 'on' : ''}" onclick="setRating(${i + 1})">★</span>`).join('');
+  }
+
+  function setRating(n) { addRating = n; renderStarIn(); }
+
+  function renderSliders() {
+    document.getElementById('sliders').innerHTML = DIMS.map((d, i) => `
+      <div class="slrow">
+        <span class="sllbl">${d}</span>
+        <input type="range" class="sld" min="1" max="5" value="${addR[i]}"
+          oninput="addR[${i}]=+this.value;this.nextElementSibling.textContent=this.value"/>
+        <span class="slv">${addR[i]}</span>
+      </div>`).join('');
+  }
+
+  function addSake() {
+    const name = document.getElementById('aN').value.trim();
+    if (!name) { document.getElementById('aN').focus(); return; }
+    sakes.push({
+      id: nextId++, name,
+      nameJa: document.getElementById('aJ').value.trim(),
+      type: document.getElementById('aT').value,
+      brewery: document.getElementById('aBr').value.trim(),
+      region: document.getElementById('aR').value.trim(),
+      polishing: +document.getElementById('aPol').value || null,
+      abv: +document.getElementById('aAbv').value || null,
+      temp: document.getElementById('aTemp').value,
+      status: addStatus,
+      rating: addStatus === 'tried' ? addRating : 0,
+      profile: [...addR],
+      notes: document.getElementById('aNotes').value.trim(),
+      place: document.getElementById('aPlace').value.trim(),
+      date: document.getElementById('aDate').value,
+    });
+    sv(); closeOv('addOv'); renderAll();
+  }
+
+  function openDet(id) {
+    const s = sakes.find(x => x.id === id); if (!s) return;
+    const t = TYPES[s.type] || { c: '#7A7A7A', bg: 'rgba(122,122,122,.15)' };
+    document.getElementById('detBody').innerHTML = `
+      <div class="dh">
+        <div style="flex:1">
+          <div class="dname">${s.name}</div>
+          ${s.nameJa ? `<div class="dname-ja">${s.nameJa}</div>` : ''}
+          <div class="dbrewery">${[s.brewery, s.region].filter(Boolean).join(' · ')}</div>
+          <div class="dchips">
+            <span class="tchip" style="background:${t.bg};color:${t.c}">${s.type}</span>
+            <span class="schip ${s.status === 'tried' ? 's-tried' : 's-wish'}">${s.status === 'tried' ? '마셔봄' : '위시리스트'}</span>
+            ${s.temp ? `<span class="schip" style="background:rgba(122,122,122,.1);color:var(--dm)">${s.temp}</span>` : ''}
+          </div>
+        </div>
+        <div style="flex-shrink:0">${radarLarge(s.profile, t.c)}</div>
+      </div>
+      ${s.status === 'tried' ? `<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div class="stars">${stars(s.rating, 16)}</div>
+        <span style="font-size:13px;color:var(--dm)">${s.rating ? s.rating + '.0점' : ''}</span>
+      </div>` : ''}
+      <div class="dgrid">
+        ${s.polishing ? `<div class="dcell"><div class="dcl">정미율</div><div class="dcv">${s.polishing}%</div></div>` : ''}
+        ${s.abv ? `<div class="dcell"><div class="dcl">도수</div><div class="dcv">${s.abv}%</div></div>` : ''}
+        ${s.place ? `<div class="dcell"><div class="dcl">마신 장소</div><div class="dcv" style="font-size:13px">${s.place}</div></div>` : ''}
+        ${s.date ? `<div class="dcell"><div class="dcl">날짜</div><div class="dcv" style="font-size:13px">${fmtD(s.date)}</div></div>` : ''}
+      </div>
+      ${s.notes ? `<div class="dnotes">"${s.notes}"</div>` : ''}
+      ${s.status === 'wish' ? buildStockPanel(s) : ''}
+      <div style="display:flex;align-items:center;gap:8px;margin-top:14px;border-top:1px solid var(--bd);padding-top:14px">
+        <button class="del-btn" onclick="delS(${id})">삭제</button>
+        <button class="btn-c" onclick="closeOv('detOv')">닫기</button>
+      </div>`;
+    document.getElementById('detOv').classList.add('open');
+  }
+
+  function delS(id) {
+    if (!confirm('이 사케 기록을 삭제할까요?')) return;
+    sakes = sakes.filter(s => s.id !== id); sv(); closeOv('detOv'); renderAll();
+  }
+
+  function closeOv(id) { document.getElementById(id).classList.remove('open'); }
+  function bgC(e, id) { if (e.target === document.getElementById(id)) closeOv(id); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') ['addOv', 'detOv'].forEach(closeOv); });
+
+  renderAll();
+  // 앱 로드 후 위시리스트 자동 재고 확인 (24시간 미확인 항목)
+  setTimeout(autoCheckWishlist, 1200);
+</script>
+
+</body>
+</html>
