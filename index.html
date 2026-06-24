@@ -913,7 +913,7 @@
       return `<div class="card" style="--c:${t.c}" tabindex="0" onclick="openDet(${s.id})" onkeydown="if(event.key==='Enter')openDet(${s.id})">
         <div class="cmeta">
           <span class="tchip" style="background:${t.bg};color:${t.c}">${s.type}</span>
-          <span class="schip ${s.status === 'tried' ? 's-tried' : 's-wish'}">${s.status === 'tried' ? '마셔봄' : '위시리스트'}</span>
+          ${s.status ? `<span class="schip ${s.status === 'tried' ? 's-tried' : 's-wish'}">${s.status === 'tried' ? '마셔봄' : '위시리스트'}</span>` : ''}
         </div>
         <div class="cbody">
           <div class="cinfo">
@@ -1191,10 +1191,10 @@
   }
 
   function setStatus(s) {
-    addStatus = s;
-    document.getElementById('togTried').className = 'tog' + (s === 'tried' ? ' on' : '');
-    document.getElementById('togWish').className = 'tog' + (s === 'wish' ? ' on' : '');
-    document.getElementById('ratingSection').style.display = s === 'wish' ? 'none' : '';
+    addStatus = (addStatus === s) ? null : s;
+    document.getElementById('togTried').className = 'tog' + (addStatus === 'tried' ? ' on' : '');
+    document.getElementById('togWish').className = 'tog' + (addStatus === 'wish' ? ' on' : '');
+    document.getElementById('ratingSection').style.display = addStatus === 'tried' ? '' : 'none';
   }
 
   function renderStarIn() {
@@ -1254,7 +1254,7 @@
           <div class="dbrewery">${[s.brewery, s.region].filter(Boolean).join(' · ')}</div>
           <div class="dchips">
             <span class="tchip" style="background:${t.bg};color:${t.c}">${s.type}</span>
-            <span class="schip ${s.status === 'tried' ? 's-tried' : 's-wish'}">${s.status === 'tried' ? '마셔봄' : '위시리스트'}</span>
+            ${s.status ? `<span class="schip ${s.status === 'tried' ? 's-tried' : 's-wish'}">${s.status === 'tried' ? '마셔봄' : '위시리스트'}</span>` : ''}
             ${s.temp ? `<span class="schip" style="background:rgba(122,122,122,.1);color:var(--dm)">${s.temp}</span>` : ''}
           </div>
         </div>
