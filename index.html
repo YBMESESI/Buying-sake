@@ -697,6 +697,7 @@
   let nextId = Math.max(0, ...sakes.map(s => s.id)) + 1;
   let pendingImage = null; // { mediaType, data, previewUrl, name }
   let searchResults = [];
+  let editingId = null;
 
   function today() { const d = new Date(); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
   function p(n) { return String(n).padStart(2, '0'); }
@@ -1131,6 +1132,7 @@
   }
 
   function openAdd() {
+    editingId = null;
     addStatus = 'tried'; addRating = 0; addR = [3, 3, 3, 3, 3];
     if (pendingImage) { URL.revokeObjectURL(pendingImage.previewUrl); pendingImage = null; }
     searchResults = [];
@@ -1144,7 +1146,46 @@
     zone.innerHTML = imgZoneResetHTML();
     document.getElementById('afBtn').disabled = true;
     document.getElementById('srPanel').style.display = 'none';
+    document.querySelector('#addOv .mt').textContent = '새 사케 추가';
+    document.querySelector('#addOv .btn-p').textContent = '추가하기';
     renderStarIn(); renderSliders();
+    document.getElementById('addOv').classList.add('open');
+    setTimeout(() => document.getElementById('aN').focus(), 200);
+  }
+
+  function editSake(id) {
+    const s = sakes.find(x => x.id === id); if (!s) return;
+    editingId = id;
+    addStatus = s.status; addRating = s.rating; addR = [...s.profile];
+    if (pendingImage) { URL.revokeObjectURL(pendingImage.previewUrl); pendingImage = null; }
+    searchResults = [];
+    document.getElementById('aN').value = s.name;
+    document.getElementById('aJ').value = s.nameJa || '';
+    const tSel = document.getElementById('aT');
+    const tOpt = Array.from(tSel.options).find(o => o.value === s.type);
+    if (tOpt) tSel.value = tOpt.value;
+    document.getElementById('aBr').value = s.brewery || '';
+    document.getElementById('aR').value = s.region || '';
+    document.getElementById('aPol').value = s.polishing || '';
+    document.getElementById('aAbv').value = s.abv || '';
+    const tempSel = document.getElementById('aTemp');
+    const tempOpt = Array.from(tempSel.options).find(o => o.value === s.temp || o.text === s.temp);
+    if (tempOpt) tempSel.value = tempOpt.value;
+    document.getElementById('aNotes').value = s.notes || '';
+    document.getElementById('aPlace').value = s.place || '';
+    document.getElementById('aDate').value = s.date || '';
+    document.getElementById('togTried').className = 'tog' + (s.status === 'tried' ? ' on' : '');
+    document.getElementById('togWish').className = 'tog' + (s.status === 'wish' ? ' on' : '');
+    document.getElementById('ratingSection').style.display = s.status === 'wish' ? 'none' : '';
+    const zone = document.getElementById('imgZone');
+    zone.classList.remove('has-img', 'drag');
+    zone.innerHTML = imgZoneResetHTML();
+    document.getElementById('afBtn').disabled = true;
+    document.getElementById('srPanel').style.display = 'none';
+    document.querySelector('#addOv .mt').textContent = '사케 수정';
+    document.querySelector('#addOv .btn-p').textContent = '수정하기';
+    renderStarIn(); renderSliders();
+    closeOv('detOv');
     document.getElementById('addOv').classList.add('open');
     setTimeout(() => document.getElementById('aN').focus(), 200);
   }
@@ -1176,8 +1217,8 @@
   function addSake() {
     const name = document.getElementById('aN').value.trim();
     if (!name) { document.getElementById('aN').focus(); return; }
-    sakes.push({
-      id: nextId++, name,
+    const data = {
+      name,
       nameJa: document.getElementById('aJ').value.trim(),
       type: document.getElementById('aT').value,
       brewery: document.getElementById('aBr').value.trim(),
@@ -1191,7 +1232,14 @@
       notes: document.getElementById('aNotes').value.trim(),
       place: document.getElementById('aPlace').value.trim(),
       date: document.getElementById('aDate').value,
-    });
+    };
+    if (editingId !== null) {
+      const idx = sakes.findIndex(s => s.id === editingId);
+      if (idx !== -1) sakes[idx] = { ...sakes[idx], ...data };
+      editingId = null;
+    } else {
+      sakes.push({ id: nextId++, stockStatus: 'unchecked', stockResults: null, stockCheckedAt: null, ...data });
+    }
     sv(); closeOv('addOv'); renderAll();
   }
 
@@ -1226,6 +1274,7 @@
       ${s.status === 'wish' ? buildStockPanel(s) : ''}
       <div style="display:flex;align-items:center;gap:8px;margin-top:14px;border-top:1px solid var(--bd);padding-top:14px">
         <button class="del-btn" onclick="delS(${id})">삭제</button>
+        <button class="btn-p" style="margin-left:auto" onclick="editSake(${id})">수정</button>
         <button class="btn-c" onclick="closeOv('detOv')">닫기</button>
       </div>`;
     document.getElementById('detOv').classList.add('open');
