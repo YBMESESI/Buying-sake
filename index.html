@@ -674,24 +674,25 @@
     { id: 6, name: '신 준마이다이긴조', nameJa: '申 純米大吟醸', type: '준마이다이긴조', brewery: '미즈노 주조', region: '아이치현', polishing: 40, abv: 16, temp: '냉주 (차갑게)', status: 'wish', rating: 0, profile: [3, 3, 2, 4, 4], notes: '', place: '', date: '' },
   ];
 
+  function normalizeItem(s) {
+    const tried = s.tried !== undefined ? s.tried : s.status === 'tried';
+    const wish  = s.wish  !== undefined ? s.wish  : s.status === 'wish';
+    return { stockStatus: 'unchecked', stockResults: null, stockCheckedAt: null, ...s, tried, wish };
+  }
   function ld() {
     try {
       const r = localStorage.getItem('sake_v1');
-      if (r) {
-        // 기존 데이터에 stockStatus 필드 보장
-        return JSON.parse(r).map(s => ({
-          stockStatus: 'unchecked', stockResults: null, stockCheckedAt: null, ...s,
-        }));
-      }
+      if (r) return JSON.parse(r).map(normalizeItem);
     } catch (e) {}
-    return DEFAULT.map(s => ({ stockStatus: 'unchecked', stockResults: null, stockCheckedAt: null, ...s }));
+    return DEFAULT.map(normalizeItem);
   }
   function sv() { localStorage.setItem('sake_v1', JSON.stringify(sakes)); }
 
   let sakes = ld();
   let filter = 'all';
   let activeCat = 'all';
-  let addStatus = 'tried';
+  let addTried = false;
+  let addWish  = false;
   let addRating = 0;
   let addR = [3, 3, 3, 3, 3];
   let nextId = Math.max(0, ...sakes.map(s => s.id)) + 1;
@@ -839,7 +840,7 @@
 
   // ── AUTO-CHECK (앱 로드 시 24시간 미확인 항목 자동 점검) ──
   async function autoCheckWishlist() {
-    const wishItems = sakes.filter(s => s.status === 'wish');
+    const wishItems = sakes.filter(s => s.wish);
     const toCheck = wishItems.filter(s => {
       if (!s.stockCheckedAt) return true;
       const hrs = (Date.now() - new Date(s.stockCheckedAt).getTime()) / 3600000;
@@ -859,8 +860,8 @@
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     document.getElementById('tbDate').textContent = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]}요일)`;
 
-    const tried = sakes.filter(s => s.status === 'tried');
-    const wish = sakes.filter(s => s.status === 'wish');
+    const tried = sakes.filter(s => s.tried);
+    const wish  = sakes.filter(s => s.wish);
     const availCount = wish.filter(s => s.stockStatus === 'available').length;
     const avg = tried.length ? Math.round(tried.reduce((a, s) => a + s.rating, 0) / tried.length * 10) / 10 : 0;
     const typeCnt = {};
@@ -895,8 +896,8 @@
   function getList() {
     let l = sakes;
     if (activeCat !== 'all') l = l.filter(s => s.type === activeCat);
-    if (filter === 'tried') l = l.filter(s => s.status === 'tried');
-    else if (filter === 'wish') l = l.filter(s => s.status === 'wish');
+    if (filter === 'tried') l = l.filter(s => s.tried);
+    else if (filter === 'wish') l = l.filter(s => s.wish);
     return l;
   }
 
@@ -913,7 +914,10 @@
       return `<div class="card" style="--c:${t.c}" tabindex="0" onclick="openDet(${s.id})" onkeydown="if(event.key==='Enter')openDet(${s.id})">
         <div class="cmeta">
           <span class="tchip" style="background:${t.bg};color:${t.c}">${s.type}</span>
-          ${s.status ? `<span class="schip ${s.status === 'tried' ? 's-tried' : 's-wish'}">${s.status === 'tried' ? '마셔봄' : '위시리스트'}</span>` : ''}
+          <div style="display:flex;gap:4px">
+            ${s.tried ? `<span class="schip s-tried">마셔봄</span>` : ''}
+            ${s.wish  ? `<span class="schip s-wish">위시리스트</span>` : ''}
+          </div>
         </div>
         <div class="cbody">
           <div class="cinfo">
@@ -929,10 +933,11 @@
           ${s.abv ? `<span class="dpill">${s.abv}%</span>` : ''}
         </div>
         ${s.notes ? `<div class="cnote">${s.notes}</div>` : ''}
-        ${s.status === 'wish' ? buildStockPanel(s) : `<div class="cfoot">
+        ${s.wish ? buildStockPanel(s) : ''}
+        ${(s.tried || (!s.tried && !s.wish)) ? `<div class="cfoot">
           <span>${s.place || '—'}</span>
           <span>${s.date ? fmtD(s.date) : '날짜 미기록'}</span>
-        </div>`}
+        </div>` : ''}
       </div>`;
     }).join('');
   }
@@ -1133,14 +1138,14 @@
 
   function openAdd() {
     editingId = null;
-    addStatus = 'tried'; addRating = 0; addR = [3, 3, 3, 3, 3];
+    addTried = false; addWish = false; addRating = 0; addR = [3, 3, 3, 3, 3];
     if (pendingImage) { URL.revokeObjectURL(pendingImage.previewUrl); pendingImage = null; }
     searchResults = [];
     ['aN', 'aJ', 'aBr', 'aR', 'aPol', 'aAbv', 'aNotes', 'aPlace'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('aDate').value = today();
-    document.getElementById('togTried').className = 'tog on';
+    document.getElementById('togTried').className = 'tog';
     document.getElementById('togWish').className = 'tog';
-    document.getElementById('ratingSection').style.display = '';
+    document.getElementById('ratingSection').style.display = 'none';
     const zone = document.getElementById('imgZone');
     zone.classList.remove('has-img', 'drag');
     zone.innerHTML = imgZoneResetHTML();
@@ -1156,7 +1161,7 @@
   function editSake(id) {
     const s = sakes.find(x => x.id === id); if (!s) return;
     editingId = id;
-    addStatus = s.status; addRating = s.rating; addR = [...s.profile];
+    addTried = s.tried || false; addWish = s.wish || false; addRating = s.rating; addR = [...s.profile];
     if (pendingImage) { URL.revokeObjectURL(pendingImage.previewUrl); pendingImage = null; }
     searchResults = [];
     document.getElementById('aN').value = s.name;
@@ -1174,9 +1179,9 @@
     document.getElementById('aNotes').value = s.notes || '';
     document.getElementById('aPlace').value = s.place || '';
     document.getElementById('aDate').value = s.date || '';
-    document.getElementById('togTried').className = 'tog' + (s.status === 'tried' ? ' on' : '');
-    document.getElementById('togWish').className = 'tog' + (s.status === 'wish' ? ' on' : '');
-    document.getElementById('ratingSection').style.display = s.status === 'wish' ? 'none' : '';
+    document.getElementById('togTried').className = 'tog' + (addTried ? ' on' : '');
+    document.getElementById('togWish').className = 'tog' + (addWish ? ' on' : '');
+    document.getElementById('ratingSection').style.display = addTried ? '' : 'none';
     const zone = document.getElementById('imgZone');
     zone.classList.remove('has-img', 'drag');
     zone.innerHTML = imgZoneResetHTML();
@@ -1191,10 +1196,11 @@
   }
 
   function setStatus(s) {
-    addStatus = (addStatus === s) ? null : s;
-    document.getElementById('togTried').className = 'tog' + (addStatus === 'tried' ? ' on' : '');
-    document.getElementById('togWish').className = 'tog' + (addStatus === 'wish' ? ' on' : '');
-    document.getElementById('ratingSection').style.display = addStatus === 'tried' ? '' : 'none';
+    if (s === 'tried') addTried = !addTried;
+    else if (s === 'wish') addWish = !addWish;
+    document.getElementById('togTried').className = 'tog' + (addTried ? ' on' : '');
+    document.getElementById('togWish').className = 'tog' + (addWish ? ' on' : '');
+    document.getElementById('ratingSection').style.display = addTried ? '' : 'none';
   }
 
   function renderStarIn() {
@@ -1226,8 +1232,9 @@
       polishing: +document.getElementById('aPol').value || null,
       abv: +document.getElementById('aAbv').value || null,
       temp: document.getElementById('aTemp').value,
-      status: addStatus,
-      rating: addStatus === 'tried' ? addRating : 0,
+      tried: addTried,
+      wish: addWish,
+      rating: addTried ? addRating : 0,
       profile: [...addR],
       notes: document.getElementById('aNotes').value.trim(),
       place: document.getElementById('aPlace').value.trim(),
@@ -1254,13 +1261,14 @@
           <div class="dbrewery">${[s.brewery, s.region].filter(Boolean).join(' · ')}</div>
           <div class="dchips">
             <span class="tchip" style="background:${t.bg};color:${t.c}">${s.type}</span>
-            ${s.status ? `<span class="schip ${s.status === 'tried' ? 's-tried' : 's-wish'}">${s.status === 'tried' ? '마셔봄' : '위시리스트'}</span>` : ''}
-            ${s.temp ? `<span class="schip" style="background:rgba(122,122,122,.1);color:var(--dm)">${s.temp}</span>` : ''}
+            ${s.tried ? `<span class="schip s-tried">마셔봄</span>` : ''}
+            ${s.wish  ? `<span class="schip s-wish">위시리스트</span>` : ''}
+            ${s.temp  ? `<span class="schip" style="background:rgba(122,122,122,.1);color:var(--dm)">${s.temp}</span>` : ''}
           </div>
         </div>
         <div style="flex-shrink:0">${radarLarge(s.profile, t.c)}</div>
       </div>
-      ${s.status === 'tried' ? `<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      ${s.tried ? `<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
         <div class="stars">${stars(s.rating, 16)}</div>
         <span style="font-size:13px;color:var(--dm)">${s.rating ? s.rating + '.0점' : ''}</span>
       </div>` : ''}
@@ -1271,7 +1279,7 @@
         ${s.date ? `<div class="dcell"><div class="dcl">날짜</div><div class="dcv" style="font-size:13px">${fmtD(s.date)}</div></div>` : ''}
       </div>
       ${s.notes ? `<div class="dnotes">"${s.notes}"</div>` : ''}
-      ${s.status === 'wish' ? buildStockPanel(s) : ''}
+      ${s.wish ? buildStockPanel(s) : ''}
       <div style="display:flex;align-items:center;gap:8px;margin-top:14px;border-top:1px solid var(--bd);padding-top:14px">
         <button class="del-btn" onclick="delS(${id})">삭제</button>
         <button class="btn-p" style="margin-left:auto" onclick="editSake(${id})">수정</button>
