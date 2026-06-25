@@ -198,12 +198,15 @@
     .check-btn { padding: 4px 10px; background: var(--s3); border: 1px solid var(--bd2); border-radius: 6px; font-size: 10px; color: var(--dm); cursor: pointer; font-family: var(--sans); transition: all .12s; white-space: nowrap; }
     .check-btn:hover:not(:disabled) { background: var(--ab); color: #0D1018; border-color: transparent; font-weight: 700; }
     .check-btn:disabled { opacity: .5; cursor: not-allowed; }
-    .shop-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; font-size: 11px; }
+    .shop-row { display: flex; align-items: center; gap: 7px; padding: 7px 0; border-bottom: 1px solid var(--bd); font-size: 11px; flex-wrap: wrap; }
+    .shop-row:last-child { border-bottom: none; }
     .shop-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .shop-name-txt { color: var(--dm); flex: 1; }
+    .shop-name-txt { color: var(--dm); flex: 1; min-width: 100px; }
+    .shop-meta { display: flex; align-items: center; gap: 8px; margin-left: auto; }
     .shop-cnt { color: var(--mt); font-variant-numeric: tabular-nums; font-size: 10px; }
-    .shop-link { font-size: 10px; color: var(--ab); text-decoration: none; white-space: nowrap; }
-    .shop-link:hover { color: var(--ab-l); }
+    .shop-link { font-size: 10px; color: var(--ab); text-decoration: none; white-space: nowrap; padding: 3px 8px; border: 1px solid var(--bd2); border-radius: 5px; transition: all .12s; }
+    .shop-link:hover { background: var(--ab); color: #0D1018; border-color: transparent; }
+    .shop-note { font-size: 9px; color: var(--mt); width: 100%; padding-left: 14px; }
     .stock-time { font-size: 9px; color: var(--mt); margin-top: 6px; }
     .avail-badge { display: inline-flex; align-items: center; gap: 3px; background: rgba(78,138,112,.18); color: #6AB890; border-radius: 4px; padding: 2px 7px; font-size: 9px; font-weight: 600; letter-spacing: .5px; }
 
@@ -292,6 +295,11 @@
       .toast { min-width: unset; max-width: 100%; }
 
       .frow { grid-template-columns: 1fr; }
+      .shop-row { gap: 5px; }
+      .shop-name-txt { font-size: 12px; min-width: unset; }
+      .shop-meta { width: 100%; padding-left: 14px; gap: 8px; margin-left: 0; }
+      .shop-link { flex: 1; text-align: center; padding: 5px 10px; font-size: 12px; }
+      .shop-note { display: none; }
     }
   </style>
 </head>
@@ -720,10 +728,20 @@
     { id: 6, name: '신 준마이다이긴조', nameJa: '申 純米大吟醸', type: '준마이다이긴조', brewery: '미즈노 주조', region: '아이치현', polishing: 40, abv: 16, temp: '냉주 (차갑게)', status: 'wish', rating: 0, profile: [3, 3, 2, 4, 4], notes: '', place: '', date: '' },
   ];
 
+  const OLD_SHOPS = ['Rakuten', 'rakuten', 'Amazon', 'amazon', 'Yahoo', 'yahoo'];
+  function hasOldShops(results) {
+    return Array.isArray(results) && results.some(r => OLD_SHOPS.some(k => r.name && r.name.includes(k)));
+  }
   function normalizeItem(s) {
     const tried = s.tried !== undefined ? s.tried : s.status === 'tried';
     const wish  = s.wish  !== undefined ? s.wish  : s.status === 'wish';
-    return { stockStatus: 'unchecked', stockResults: null, stockCheckedAt: null, ...s, tried, wish };
+    const base = { stockStatus: 'unchecked', stockResults: null, stockCheckedAt: null, ...s, tried, wish };
+    if (hasOldShops(base.stockResults)) {
+      base.stockResults = null;
+      base.stockStatus = 'unchecked';
+      base.stockCheckedAt = null;
+    }
+    return base;
   }
   function ld() {
     try {
@@ -810,19 +828,20 @@
     let rows;
     if (s.stockResults) {
       rows = s.stockResults.map(r => {
-        const dot = r.available === true ? '#6AB890' : r.available === false ? '#C07070' : 'var(--mt)';
+        const dot = r.available === true ? '#6AB890' : r.available === false ? '#C07070' : 'var(--bd2)';
         const status = r.available === true
           ? `<span style="color:#6AB890;font-size:10px">${r.price || '구매 가능'}</span>`
           : r.available === false
           ? `<span style="color:#C07070;font-size:10px">품절</span>`
-          : `<span style="font-size:10px;color:var(--mt)">확인 필요</span>`;
-        const note = r.note ? `<div style="font-size:9px;color:var(--mt);margin-top:2px">${r.note}</div>` : '';
-        return `<div class="shop-row" style="flex-wrap:wrap">
-          <div class="shop-dot" style="background:${dot}"></div>
+          : '';
+        return `<div class="shop-row">
+          <div class="shop-dot" style="background:${dot};flex-shrink:0"></div>
           <span class="shop-name-txt">${r.name}</span>
-          ${status}
-          <a class="shop-link" href="${r.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">바로 구매 →</a>
-          ${note ? `<div style="width:100%;padding-left:14px">${note}</div>` : ''}
+          <div class="shop-meta">
+            ${status}
+            <a class="shop-link" href="${r.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">검색 →</a>
+          </div>
+          ${r.note ? `<div class="shop-note">${r.note}</div>` : ''}
         </div>`;
       }).join('');
     } else if (isChecking) {
