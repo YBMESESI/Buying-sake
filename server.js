@@ -7,14 +7,16 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Load .env.local
-try {
-  const env = fs.readFileSync(path.join(__dirname, '.env.local'), 'utf8');
-  for (const line of env.split('\n')) {
-    const m = line.match(/^([A-Z_]+)=(.+)$/);
-    if (m) process.env[m[1]] = m[2].trim();
-  }
-} catch {}
+// Load .env and .env.local
+for (const name of ['.env', '.env.local']) {
+  try {
+    const env = fs.readFileSync(path.join(__dirname, name), 'utf8');
+    for (const line of env.split('\n')) {
+      const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.+)$/);
+      if (m) process.env[m[1].toUpperCase()] = m[2].trim();
+    }
+  } catch {}
+}
 
 const PORT = 3000;
 const MIME = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.ico': 'image/x-icon' };
