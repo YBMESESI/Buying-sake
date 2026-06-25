@@ -253,11 +253,52 @@
     .gv-buy:hover { background: var(--ab); border-color: transparent; color: #0D1018; font-weight: 700; }
     .gv-buy:focus-visible { outline: 2px solid var(--ab); outline-offset: 2px; }
     .gv-foot { font-size: 10px; color: var(--mt); margin-top: 16px; line-height: 1.7; }
+
+    /* ── HAMBURGER ── */
+    .hamburger { display: none; background: var(--s2); border: 1px solid var(--bd); border-radius: var(--r2); padding: 9px 10px; cursor: pointer; color: var(--dm); align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; }
+    .hamburger:hover { background: var(--s3); color: var(--tx); }
+
+    /* ── SIDEBAR OVERLAY ── */
+    .sb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 150; }
+    .sb-overlay.open { display: block; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 680px) {
+      .hamburger { display: flex; }
+
+      .sb {
+        position: fixed; left: -100%; top: 0; z-index: 200;
+        height: 100vh; width: 80vw; max-width: 300px;
+        transition: left .25s cubic-bezier(.4,0,.2,1);
+      }
+      .sb.open { left: 0; box-shadow: 6px 0 28px rgba(0,0,0,.55); }
+
+      .tb { padding: 12px 14px 0; gap: 8px; }
+      .tb-t { font-size: 19px; }
+      .tb-d { font-size: 10px; }
+
+      .ftabs { padding: 10px 14px 0; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+      .ft { white-space: nowrap; flex-shrink: 0; }
+
+      .grid { padding: 12px 14px 24px; grid-template-columns: 1fr; }
+
+      .ov { align-items: flex-end; }
+      .modal { max-width: 100%; margin: 0; border-radius: var(--r) var(--r) 0 0; max-height: 92vh; }
+
+      .guide-view { padding: 14px 14px 24px; }
+      .gv-grid { grid-template-columns: 1fr; }
+
+      #toast-wrap { bottom: 10px; right: 10px; left: 10px; }
+      .toast { min-width: unset; max-width: 100%; }
+
+      .frow { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
-<aside class="sb">
+<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+<aside class="sb" id="sidebar">
   <div class="sb-head">
     <div class="sb-en">Sake Diary</div>
     <div class="sb-ko">🍶 사케 다이어리</div>
@@ -284,9 +325,14 @@
 
 <main class="main">
   <div class="tb">
-    <div>
-      <div class="tb-t">나의 사케 여정</div>
-      <div class="tb-d" id="tbDate"></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="hamburger" onclick="openSidebar()" title="메뉴">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div>
+        <div class="tb-t" id="tbTitle">나의 사케 여정</div>
+        <div class="tb-d" id="tbDate"></div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="theme-btn" id="themeBtn" onclick="toggleTheme()"></button>
@@ -943,6 +989,7 @@
   }
 
   function openGuide() {
+    closeSidebar();
     document.querySelectorAll('.nr').forEach(n => n.classList.remove('on'));
     document.getElementById('navGuide').classList.add('on');
     document.querySelector('.ftabs').style.display = 'none';
@@ -964,8 +1011,17 @@
     document.querySelector('.tb-t').textContent = '나의 사케 여정';
   }
 
-  function setF(f, el) { closeGuide(); filter = f; document.querySelectorAll('.ft').forEach(t => t.classList.remove('on')); el.classList.add('on'); renderGrid(); }
-  function setCat(c) { closeGuide(); activeCat = c; renderAll(); }
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sbOverlay').classList.add('open');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sbOverlay').classList.remove('open');
+  }
+
+  function setF(f, el) { closeGuide(); closeSidebar(); filter = f; document.querySelectorAll('.ft').forEach(t => t.classList.remove('on')); el.classList.add('on'); renderGrid(); }
+  function setCat(c) { closeGuide(); closeSidebar(); activeCat = c; renderAll(); }
 
   // ── IMAGE ZONE ──────────────────────────────────────────
   function imgZoneResetHTML() {
